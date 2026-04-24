@@ -29,7 +29,7 @@ public:
     void HandlePacket(std::shared_ptr<const TcpData> data);
 
 private:
-    Thread m_threadObj;
+    dmq::os::Thread m_threadObj;
 
     enum States
     {

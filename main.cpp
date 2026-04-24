@@ -30,7 +30,7 @@ void ProcessTimers()
     while (!processTimerExit.load())
     {
         // Process all delegate-based timers
-        Timer::ProcessTimers();
+        dmq::util::Timer::ProcessTimers();
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
@@ -93,7 +93,7 @@ int main()
     // -----------------------------------------------------------------------
     cout << "\n=== Asynchronous Motor (Active Object) ===" << endl;
 
-    Thread smThread("MotorSMThread");
+    dmq::os::Thread smThread("MotorSMThread");
     smThread.CreateThread();
 
     Motor asyncMotor;

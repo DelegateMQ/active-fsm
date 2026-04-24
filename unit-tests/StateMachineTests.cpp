@@ -342,7 +342,7 @@ static void TestConcurrentEventDispatch()
     const int N_THREADS    = 8;
     const int N_ITERATIONS = 200;
 
-    Thread smThread("StressMotorSMThread");
+    dmq::os::Thread smThread("StressMotorSMThread");
     smThread.CreateThread();
 
     StressMotor motor;

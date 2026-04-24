@@ -538,7 +538,7 @@ STATE_DEFINE(StressHSM, Child,  NoEventData) {}
 // the third OnTransition before checking the final state.
 static void TestHSMAsyncBasicDispatch()
 {
-    Thread smThread("StressHSMThread_Basic");
+    dmq::os::Thread smThread("StressHSMThread_Basic");
     smThread.CreateThread();
 
     StressHSM sm;
@@ -567,7 +567,7 @@ static void TestHSMAsyncBasicDispatch()
 // OnTransition fires exactly once per event in async mode.
 static void TestHSMAsyncTransitionCount()
 {
-    Thread smThread("StressHSMThread_Count");
+    dmq::os::Thread smThread("StressHSMThread_Count");
     smThread.CreateThread();
 
     StressHSM sm;
@@ -597,7 +597,7 @@ static void TestHSMAsyncTransitionCount()
 // Activate enters the PARENT/CHILD hierarchy; Deactivate exits it.
 static void TestHSMAsyncEntryExitCounts()
 {
-    Thread smThread("StressHSMThread_EntryExit");
+    dmq::os::Thread smThread("StressHSMThread_EntryExit");
     smThread.CreateThread();
 
     StressHSM sm;
@@ -641,7 +641,7 @@ static void TestHSMAsyncConcurrentEventDispatch()
     const int N_THREADS    = 8;
     const int N_ITERATIONS = 200;
 
-    Thread smThread("StressHSMThread_Concurrent");
+    dmq::os::Thread smThread("StressHSMThread_Concurrent");
     smThread.CreateThread();
 
     StressHSM sm;
@@ -681,7 +681,7 @@ static void TestHSMAsyncConcurrentEventDispatch()
 // deterministic. We wait for the final Disarm transition before asserting.
 static void TestHSMAsyncAlarmSequence()
 {
-    Thread smThread("AlarmPanelSMThread");
+    dmq::os::Thread smThread("AlarmPanelSMThread");
     smThread.CreateThread();
 
     AlarmPanel alarm;

@@ -20,8 +20,8 @@ public:
     dmq::Signal<void()> OnComplete;
 
 private:
-    Thread                m_threadObj;
-    Timer                 m_pollTimer;
+    dmq::os::Thread                m_threadObj;
+    dmq::util::Timer               m_pollTimer;
     dmq::ScopedConnection m_pollTimerConn;
     int                   m_speed;
 
