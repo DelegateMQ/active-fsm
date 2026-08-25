@@ -19,6 +19,7 @@
 // @see https://github.com/DelegateMQ/DelegateMQ
 // @author David Lafreniere (2000-2026)
 
+#include <atomic>
 #include <cstdint>
 #include <typeinfo>
 #include <memory>
@@ -181,9 +182,11 @@ public:
 
     virtual ~StateMachine() = default;
 
-    /// Gets the current state machine state.
+    /// Gets the current state machine state. Safe to call from any thread
+    /// (including while the state machine is dispatching on its own thread
+    /// in active-object mode) — backed by an atomic.
     /// @return Current state machine state.
-    uint8_t GetCurrentState() const { return m_currentState; }
+    uint8_t GetCurrentState() const { return m_currentState.load(std::memory_order_acquire); }
 
     /// Gets the maximum number of state machine states.
     /// @return The maximum state machine states. 
@@ -228,7 +231,7 @@ protected:
 
     /// Set a new current state.
     /// @param[in] newState - the new state.
-    void SetCurrentState(uint8_t newState) { m_currentState = newState; }
+    void SetCurrentState(uint8_t newState) { m_currentState.store(newState, std::memory_order_release); }
 
     /// Accessors for subclass StateEngine overrides (e.g. StateMachineHSM).
     uint8_t GetNewState() const { return m_newState; }
@@ -246,8 +249,10 @@ private:
     /// The maximum number of state machine states.
     const uint8_t MAX_STATES;
 
-    /// The current state machine state.
-    uint8_t m_currentState;
+    /// The current state machine state. Atomic so GetCurrentState() can be
+    /// safely polled from other threads while the state machine dispatches
+    /// on its own thread in active-object mode.
+    std::atomic<uint8_t> m_currentState;
 
     /// The new state the state machine has yet to transition to. 
     uint8_t m_newState;

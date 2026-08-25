@@ -52,6 +52,12 @@ private:
     virtual const StateMapRow*   GetStateMap()   override final { return nullptr; }
     virtual const StateMapRowEx* GetStateMapEx() override final { return nullptr; }
 
+    /// Upper bound on hierarchy depth (and on ancestor-walk iterations). Guards
+    /// FindLCA and the exit/entry chain walks against a malformed or cyclic
+    /// ParentState chain in a state map — such a map is a programming error,
+    /// and we ASSERT_TRUE rather than loop forever.
+    static constexpr uint8_t MAX_HSM_DEPTH = 32;
+
     /// Returns the Least Common Ancestor of stateA and stateB, or NO_PARENT.
     uint8_t FindLCA(uint8_t stateA, uint8_t stateB, const StateMapRowHSM* map) const;
 };

@@ -42,10 +42,14 @@ void StateMachineHSM::StateEngine()
             {
                 uint8_t lca = FindLCA(fromState, newState, map);
 
-                // Exit from current state up to (not including) LCA.
+                // Exit from current state up to (not including) LCA. Bounded by
+                // MAX_HSM_DEPTH so a cyclic/malformed ParentState chain asserts
+                // instead of looping forever.
                 uint8_t s = fromState;
+                uint8_t exitSteps = 0;
                 while (s < GetMaxStates() && s != lca)
                 {
+                    ASSERT_TRUE(exitSteps++ < MAX_HSM_DEPTH);
                     if (map[s].Exit != nullptr)
                         map[s].Exit->InvokeExitAction(this);
                     OnExit(s);
@@ -54,12 +58,12 @@ void StateMachineHSM::StateEngine()
 
                 // Collect entry chain: target up to (not including) LCA.
                 // Stored leaf-first; executed in reverse (root-first).
-                static const uint8_t MAX_HSM_DEPTH = 32;
                 uint8_t entryChain[MAX_HSM_DEPTH];
                 uint8_t entryCount = 0;
                 s = newState;
-                while (s < GetMaxStates() && s != lca && entryCount < MAX_HSM_DEPTH)
+                while (s < GetMaxStates() && s != lca)
                 {
+                    ASSERT_TRUE(entryCount < MAX_HSM_DEPTH);
                     entryChain[entryCount++] = s;
                     s = map[s].ParentState;
                 }
@@ -92,7 +96,9 @@ void StateMachineHSM::StateEngine()
 
 //----------------------------------------------------------------------------
 // FindLCA
-// O(depth^2) walk — depth is typically 2–5 levels, so this is fine.
+// O(depth^2) walk — depth is typically 2-5 levels, so this is fine. Both
+// walks are bounded by MAX_HSM_DEPTH so a cyclic/malformed ParentState chain
+// (a state map bug) asserts instead of looping forever.
 //----------------------------------------------------------------------------
 uint8_t StateMachineHSM::FindLCA(uint8_t stateA, uint8_t stateB,
                                   const StateMapRowHSM* map) const
@@ -102,11 +108,16 @@ uint8_t StateMachineHSM::FindLCA(uint8_t stateA, uint8_t stateB,
     // For each ancestor of stateA (including itself), check whether it is also
     // an ancestor of stateB (including stateB itself).
     uint8_t a = stateA;
+    uint8_t aSteps = 0;
     while (a < maxStates)
     {
+        ASSERT_TRUE(aSteps++ < MAX_HSM_DEPTH);
+
         uint8_t b = stateB;
+        uint8_t bSteps = 0;
         while (b < maxStates)
         {
+            ASSERT_TRUE(bSteps++ < MAX_HSM_DEPTH);
             if (a == b)
                 return a;
             b = map[b].ParentState;

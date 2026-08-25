@@ -42,7 +42,7 @@ A compact, table-driven C++ finite state machine (FSM) with optional hierarchica
 - [Comparison with other libraries](#comparison-with-other-libraries)
     - [Boost.MSM](#boostmsm)
     - [Boost.Statechart](#booststatechart)
-    - [SML (kgrzybek)](#sml-kgrzybek)
+    - [SML](#sml)
     - [TinyFSM](#tinyfsm)
     - [Summary](#summary)
 
@@ -203,11 +203,14 @@ STATE_DEFINE(Motor, Start, MotorData)
 
 ## State map
 
-The state map links state enums to state functions, guards, entry, and exit actions.
+The state map links state enums to state functions, and optionally to guard, entry, and exit actions via `STATE_MAP_ENTRY_ALL_EX`. Motor uses none of those, so it uses the plain `STATE_MAP_ENTRY_EX` form:
 
 ```cpp
 BEGIN_STATE_MAP_EX
-    STATE_MAP_ENTRY_ALL_EX(&Start, &GuardStart, &EntryStart, &ExitStart)
+    STATE_MAP_ENTRY_EX(&Idle)
+    STATE_MAP_ENTRY_EX(&Stop)
+    STATE_MAP_ENTRY_EX(&Start)
+    STATE_MAP_ENTRY_EX(&ChangeSpeed)
 END_STATE_MAP_EX
 ```
 
@@ -301,7 +304,7 @@ void CentrifugeTest::ST_Idle(std::shared_ptr<const NoEventData> data)
 
 # Hierarchical state machine (HSM)
 
-`StateMachineHSM` extends `StateMachine` with a two-level hierarchy. Each state may declare a parent state. On a transition, exit actions walk up from the current state to (but not including) the Least Common Ancestor (LCA), and entry actions walk down from the LCA to the target state. States with no parent are top-level states.
+`StateMachineHSM` extends `StateMachine` with an arbitrary-depth state hierarchy. Each state may declare a parent state, and parents may themselves have parents, forming a chain of any depth. On a transition, exit actions walk up from the current state to (but not including) the Least Common Ancestor (LCA), and entry actions walk down from the LCA to the target state. States with no parent are top-level states. The `AlarmPanel` example below uses a two-level hierarchy, but nothing in the engine limits it to two.
 
 The key benefit over a flat FSM is that shared behavior lives in the parent state once. Child states inherit transitions from the parent without duplicating them, and parent entry/exit actions activate or deactivate hardware for the entire composite state regardless of which child is active.
 
@@ -407,12 +410,12 @@ This project includes an optional fixed-block pool allocator, `xallocator`. When
 
 The table below compares this implementation against several widely used C++ state machine libraries across the features most relevant to embedded and multithreaded applications.
 
-| Feature | This implementation | Boost.MSM | Boost.Statechart | SML (kgrzybek) | TinyFSM |
+| Feature | This implementation | Boost.MSM | Boost.Statechart | SML | TinyFSM |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | Compact binary footprint | ✓ | — | — | ✓ | ✓ |
 | Embedded-friendly | ✓ | — | — | ✓ | ✓ |
 | Runtime state registration | ✓ | — | — | — | — |
-| Typed event data per state | ✓ | ✓ | ✓ | ✓ | — |
+| Typed event data per state | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Guard conditions | ✓ | ✓ | ✓ | ✓ | — |
 | Entry / exit actions | ✓ | ✓ | ✓ | ✓ | ✓ |
 | State machine inheritance | ✓ | — | ✓ | — | — |
@@ -430,7 +433,7 @@ Boost.MSM is one of the most feature-complete C++ SM libraries available. Transi
 
 Boost.Statechart provides a runtime Hierarchical State Machine that closely follows the UML semantics including orthogonal regions and history states. The runtime flexibility comes at a cost: each state is a separate heap-allocated object with virtual dispatch at every transition. The Boost dependency and per-state heap allocation make it unsuitable for constrained embedded systems.
 
-### SML (kgrzybek)
+### SML
 
 SML is a modern, header-only C++14 library that defines transitions using a concise DSL. It has no heap allocation, no RTTI requirement, and compiles to very tight code. The main limitation is that the entire state machine structure — states, events, guards, and transitions — must be expressed as a compile-time type list. This makes runtime introspection, signals, and dynamic observer attachment impossible without significant extra work. There is also no built-in threading support.
 
