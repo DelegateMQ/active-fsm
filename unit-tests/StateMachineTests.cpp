@@ -152,13 +152,13 @@ STATE_DEFINE(StressMotor, StateRunning, NoEventData) {}
 static void TestInitialState()
 {
     Motor m;
-    ASSERT_TRUE(m.GetCurrentState() == 0);  // ST_IDLE == 0
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 0);  // ST_IDLE == 0
 }
 
 static void TestMaxStates()
 {
     Motor m;
-    ASSERT_TRUE(m.GetMaxStates() == 4);  // Motor::ST_MAX_STATES
+    DMQ_ASSERT_TRUE(m.GetMaxStates() == 4);  // Motor::ST_MAX_STATES
 }
 
 static void TestBasicTransition()
@@ -166,7 +166,7 @@ static void TestBasicTransition()
     Motor m;
     auto d = xmake_shared<MotorData>(); d->speed = 100;
     m.SetSpeed(d);
-    ASSERT_TRUE(m.GetCurrentState() == 2);  // ST_START
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 2);  // ST_START
 }
 
 static void TestSelfTransitionDoesNotChangeState()
@@ -174,15 +174,15 @@ static void TestSelfTransitionDoesNotChangeState()
     Motor m;
     auto d1 = xmake_shared<MotorData>(); d1->speed = 100;
     m.SetSpeed(d1);
-    ASSERT_TRUE(m.GetCurrentState() == 2);  // ST_START
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 2);  // ST_START
 
     auto d2 = xmake_shared<MotorData>(); d2->speed = 200;
     m.SetSpeed(d2);
-    ASSERT_TRUE(m.GetCurrentState() == 3);  // ST_CHANGE_SPEED
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 3);  // ST_CHANGE_SPEED
 
     auto d3 = xmake_shared<MotorData>(); d3->speed = 300;
     m.SetSpeed(d3);
-    ASSERT_TRUE(m.GetCurrentState() == 3);  // still ST_CHANGE_SPEED
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 3);  // still ST_CHANGE_SPEED
 }
 
 static void TestInternalEventChain()
@@ -192,16 +192,16 @@ static void TestInternalEventChain()
     Motor m;
     auto d = xmake_shared<MotorData>(); d->speed = 100;
     m.SetSpeed(d);
-    ASSERT_TRUE(m.GetCurrentState() == 2);  // ST_START
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 2);  // ST_START
     m.Halt();
-    ASSERT_TRUE(m.GetCurrentState() == 0);  // ST_IDLE (via ST_STOP -> InternalEvent)
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 0);  // ST_IDLE (via ST_STOP -> InternalEvent)
 }
 
 static void TestEventIgnored()
 {
     Motor m;
     m.Halt();  // EVENT_IGNORED in ST_IDLE
-    ASSERT_TRUE(m.GetCurrentState() == 0);  // ST_IDLE unchanged
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 0);  // ST_IDLE unchanged
 }
 
 static void TestOnTransitionSignal()
@@ -215,8 +215,8 @@ static void TestOnTransitionSignal()
 
     auto d = xmake_shared<MotorData>(); d->speed = 100;
     m.SetSpeed(d);
-    ASSERT_TRUE(capturedFrom == 0);  // from ST_IDLE
-    ASSERT_TRUE(capturedTo   == 2);  // to ST_START
+    DMQ_ASSERT_TRUE(capturedFrom == 0);  // from ST_IDLE
+    DMQ_ASSERT_TRUE(capturedTo   == 2);  // to ST_START
 }
 
 static void TestOnEntrySignalFiresOnStateChange()
@@ -229,15 +229,15 @@ static void TestOnEntrySignalFiresOnStateChange()
 
     auto d1 = xmake_shared<MotorData>(); d1->speed = 100;
     m.SetSpeed(d1);  // IDLE -> START: entry fires
-    ASSERT_TRUE(entryCount == 1);
+    DMQ_ASSERT_TRUE(entryCount == 1);
 
     auto d2 = xmake_shared<MotorData>(); d2->speed = 200;
     m.SetSpeed(d2);  // START -> CHANGE_SPEED: entry fires
-    ASSERT_TRUE(entryCount == 2);
+    DMQ_ASSERT_TRUE(entryCount == 2);
 
     auto d3 = xmake_shared<MotorData>(); d3->speed = 300;
     m.SetSpeed(d3);  // CHANGE_SPEED -> CHANGE_SPEED: self-transition, no entry
-    ASSERT_TRUE(entryCount == 2);
+    DMQ_ASSERT_TRUE(entryCount == 2);
 }
 
 static void TestOnExitSignalFiresOnStateChange()
@@ -250,15 +250,15 @@ static void TestOnExitSignalFiresOnStateChange()
 
     auto d1 = xmake_shared<MotorData>(); d1->speed = 100;
     m.SetSpeed(d1);  // IDLE -> START: exit fires for IDLE
-    ASSERT_TRUE(exitCount == 1);
+    DMQ_ASSERT_TRUE(exitCount == 1);
 
     auto d2 = xmake_shared<MotorData>(); d2->speed = 200;
     m.SetSpeed(d2);  // START -> CHANGE_SPEED: exit fires for START
-    ASSERT_TRUE(exitCount == 2);
+    DMQ_ASSERT_TRUE(exitCount == 2);
 
     auto d3 = xmake_shared<MotorData>(); d3->speed = 300;
     m.SetSpeed(d3);  // CHANGE_SPEED -> CHANGE_SPEED: self-transition, no exit
-    ASSERT_TRUE(exitCount == 2);
+    DMQ_ASSERT_TRUE(exitCount == 2);
 }
 
 static void TestOnTransitionSelfTransition()
@@ -272,15 +272,15 @@ static void TestOnTransitionSelfTransition()
 
     auto d1 = xmake_shared<MotorData>(); d1->speed = 100;
     m.SetSpeed(d1);  // IDLE -> START
-    ASSERT_TRUE(transCount == 1);
+    DMQ_ASSERT_TRUE(transCount == 1);
 
     auto d2 = xmake_shared<MotorData>(); d2->speed = 200;
     m.SetSpeed(d2);  // START -> CHANGE_SPEED
-    ASSERT_TRUE(transCount == 2);
+    DMQ_ASSERT_TRUE(transCount == 2);
 
     auto d3 = xmake_shared<MotorData>(); d3->speed = 300;
     m.SetSpeed(d3);  // CHANGE_SPEED -> CHANGE_SPEED (self-transition still fires)
-    ASSERT_TRUE(transCount == 3);
+    DMQ_ASSERT_TRUE(transCount == 3);
 }
 
 static void TestGuardAllows()
@@ -288,10 +288,10 @@ static void TestGuardAllows()
     TestSM sm;
     sm.m_guardAllow = true;
     sm.GoB();  // ST_A -> ST_B, guard passes
-    ASSERT_TRUE(sm.GetCurrentState() == TestSM::ST_B);
-    ASSERT_TRUE(sm.m_actionBCount == 1);
-    ASSERT_TRUE(sm.m_entryBCount  == 1);  // entry fires (A != B)
-    ASSERT_TRUE(sm.m_exitACount   == 1);  // exit fires from A
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestSM::ST_B);
+    DMQ_ASSERT_TRUE(sm.m_actionBCount == 1);
+    DMQ_ASSERT_TRUE(sm.m_entryBCount  == 1);  // entry fires (A != B)
+    DMQ_ASSERT_TRUE(sm.m_exitACount   == 1);  // exit fires from A
 }
 
 static void TestGuardBlocks()
@@ -299,10 +299,10 @@ static void TestGuardBlocks()
     TestSM sm;
     sm.m_guardAllow = false;
     sm.GoB();  // ST_A -> ST_B, guard vetoes
-    ASSERT_TRUE(sm.GetCurrentState() == TestSM::ST_A);  // stayed in A
-    ASSERT_TRUE(sm.m_actionBCount == 0);
-    ASSERT_TRUE(sm.m_entryBCount  == 0);  // entry did not fire
-    ASSERT_TRUE(sm.m_exitACount   == 0);  // exit did not fire
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestSM::ST_A);  // stayed in A
+    DMQ_ASSERT_TRUE(sm.m_actionBCount == 0);
+    DMQ_ASSERT_TRUE(sm.m_entryBCount  == 0);  // entry did not fire
+    DMQ_ASSERT_TRUE(sm.m_exitACount   == 0);  // exit did not fire
 }
 
 static void TestGuardSelfTransitionBlocked()
@@ -310,12 +310,12 @@ static void TestGuardSelfTransitionBlocked()
     TestSM sm;
     sm.m_guardAllow = true;
     sm.GoB();  // A -> B
-    ASSERT_TRUE(sm.GetCurrentState() == TestSM::ST_B);
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestSM::ST_B);
 
     sm.m_guardAllow = false;
     sm.GoB();  // B -> B self-transition, guard vetoes
-    ASSERT_TRUE(sm.GetCurrentState() == TestSM::ST_B);  // still B
-    ASSERT_TRUE(sm.m_actionBCount == 1);  // action did not fire again
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestSM::ST_B);  // still B
+    DMQ_ASSERT_TRUE(sm.m_actionBCount == 1);  // action did not fire again
 }
 
 static void TestMultipleTransitions()
@@ -324,14 +324,14 @@ static void TestMultipleTransitions()
     Motor m;
     auto d1 = xmake_shared<MotorData>(); d1->speed = 100;
     m.SetSpeed(d1);
-    ASSERT_TRUE(m.GetCurrentState() == 2);  // ST_START
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 2);  // ST_START
 
     auto d2 = xmake_shared<MotorData>(); d2->speed = 200;
     m.SetSpeed(d2);
-    ASSERT_TRUE(m.GetCurrentState() == 3);  // ST_CHANGE_SPEED
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 3);  // ST_CHANGE_SPEED
 
     m.Halt();
-    ASSERT_TRUE(m.GetCurrentState() == 0);  // ST_IDLE (via ST_STOP)
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 0);  // ST_IDLE (via ST_STOP)
 }
 
 static void TestConcurrentEventDispatch()
@@ -373,25 +373,25 @@ static void TestConcurrentEventDispatch()
 
     smThread.ExitThread();  // drains queue before reading final state
 
-    ASSERT_TRUE(transitionCount > 0);
-    ASSERT_TRUE(motor.GetCurrentState() < motor.GetMaxStates());
+    DMQ_ASSERT_TRUE(transitionCount > 0);
+    DMQ_ASSERT_TRUE(motor.GetCurrentState() < motor.GetMaxStates());
 }
 
 static void TestParentTransition()
 {
     ChildDerived child;
-    ASSERT_TRUE(child.GetCurrentState() == ChildDerived::ST_IDLE);
+    DMQ_ASSERT_TRUE(child.GetCurrentState() == ChildDerived::ST_IDLE);
 
     // Use derived class event to get into derived state.
     child.GoDerived(); 
-    ASSERT_TRUE(child.GetCurrentState() == ChildDerived::ST_DERIVED);
+    DMQ_ASSERT_TRUE(child.GetCurrentState() == ChildDerived::ST_DERIVED);
 
     // Now call base event while in derived state. 
     // PARENT_TRANSITION macro in ParentBase should trigger because 
     // GetCurrentState() (ST_DERIVED) >= ParentBase::ST_MAX_STATES.
     child.CallBaseTransition(ChildDerived::ST_IDLE);
-    ASSERT_TRUE(child.GetCurrentState() == ChildDerived::ST_IDLE);
-    ASSERT_TRUE(child.m_baseActionCount == 1);
+    DMQ_ASSERT_TRUE(child.GetCurrentState() == ChildDerived::ST_IDLE);
+    DMQ_ASSERT_TRUE(child.m_baseActionCount == 1);
 }
 
 static void TestSignalDisconnection()
@@ -405,12 +405,12 @@ static void TestSignalDisconnection()
 
         auto d1 = xmake_shared<MotorData>(); d1->speed = 100;
         m.SetSpeed(d1);
-        ASSERT_TRUE(callCount == 1);
+        DMQ_ASSERT_TRUE(callCount == 1);
     } // ScopedConnection goes out of scope here
 
     auto d2 = xmake_shared<MotorData>(); d2->speed = 200;
     m.SetSpeed(d2);
-    ASSERT_TRUE(callCount == 1); // should not have incremented
+    DMQ_ASSERT_TRUE(callCount == 1); // should not have incremented
 }
 
 static void TestNoEventDataCase()
@@ -419,7 +419,7 @@ static void TestNoEventDataCase()
     // Halt() uses END_TRANSITION_MAP(nullptr). 
     // StateMachine should pass NoEventData to ST_Stop.
     m.Halt(); 
-    ASSERT_TRUE(m.GetCurrentState() == 0); // ST_STOP -> ST_IDLE
+    DMQ_ASSERT_TRUE(m.GetCurrentState() == 0); // ST_STOP -> ST_IDLE
 }
 
 // ---------------------------------------------------------------------------

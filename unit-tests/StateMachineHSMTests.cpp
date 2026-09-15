@@ -127,7 +127,7 @@ enum AlarmState { AL_DISARMED = 0, AL_ARMED = 1, AL_ARMED_HOME = 2, AL_ARMED_AWA
 static void TestHSMInitialState()
 {
     TestHSM sm;
-    ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_TOP);
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_TOP);
 }
 
 // TOP → CHILD1: parent entry fires before child entry, then state action.
@@ -135,11 +135,11 @@ static void TestHSMEntryOrderParentFirst()
 {
     TestHSM sm;
     sm.GoChild1();
-    ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD1);
-    ASSERT_TRUE(sm.m_log.size() == 3);
-    ASSERT_TRUE(sm.m_log[0] == "EN_PARENT");  // parent enters before child
-    ASSERT_TRUE(sm.m_log[1] == "EN_CHILD1");
-    ASSERT_TRUE(sm.m_log[2] == "ST_CHILD1");
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD1);
+    DMQ_ASSERT_TRUE(sm.m_log.size() == 3);
+    DMQ_ASSERT_TRUE(sm.m_log[0] == "EN_PARENT");  // parent enters before child
+    DMQ_ASSERT_TRUE(sm.m_log[1] == "EN_CHILD1");
+    DMQ_ASSERT_TRUE(sm.m_log[2] == "ST_CHILD1");
 }
 
 // CHILD1 → CHILD2: only child exit/entry fires; PARENT is the LCA — not exited/entered.
@@ -150,11 +150,11 @@ static void TestHSMSiblingTransitionSkipsParentExitEntry()
     sm.m_log.clear();
 
     sm.Toggle();  // CHILD1 → CHILD2
-    ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD2);
-    ASSERT_TRUE(sm.m_log.size() == 3);
-    ASSERT_TRUE(sm.m_log[0] == "EX_CHILD1");
-    ASSERT_TRUE(sm.m_log[1] == "EN_CHILD2");
-    ASSERT_TRUE(sm.m_log[2] == "ST_CHILD2");
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD2);
+    DMQ_ASSERT_TRUE(sm.m_log.size() == 3);
+    DMQ_ASSERT_TRUE(sm.m_log[0] == "EX_CHILD1");
+    DMQ_ASSERT_TRUE(sm.m_log[1] == "EN_CHILD2");
+    DMQ_ASSERT_TRUE(sm.m_log[2] == "ST_CHILD2");
 }
 
 // CHILD1 → TOP: child exit and parent exit both fire; top has no entry action.
@@ -165,11 +165,11 @@ static void TestHSMExitOrderChildBeforeParent()
     sm.m_log.clear();
 
     sm.GoTop();  // CHILD1 propagates → PARENT → ST_TOP
-    ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_TOP);
-    ASSERT_TRUE(sm.m_log.size() == 3);
-    ASSERT_TRUE(sm.m_log[0] == "EX_CHILD1");  // child exits first
-    ASSERT_TRUE(sm.m_log[1] == "EX_PARENT");  // then parent
-    ASSERT_TRUE(sm.m_log[2] == "ST_TOP");
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_TOP);
+    DMQ_ASSERT_TRUE(sm.m_log.size() == 3);
+    DMQ_ASSERT_TRUE(sm.m_log[0] == "EX_CHILD1");  // child exits first
+    DMQ_ASSERT_TRUE(sm.m_log[1] == "EX_PARENT");  // then parent
+    DMQ_ASSERT_TRUE(sm.m_log[2] == "ST_TOP");
 }
 
 // TOP → CHILD1 → TOP: full round-trip with correct entry/exit sequencing.
@@ -178,14 +178,14 @@ static void TestHSMRoundTrip()
     TestHSM sm;
     sm.GoChild1();
     sm.GoTop();
-    ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_TOP);
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_TOP);
 
     sm.m_log.clear();
     sm.GoChild2();  // TOP → CHILD2: EN_PARENT, EN_CHILD2, ST_CHILD2
-    ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD2);
-    ASSERT_TRUE(sm.m_log[0] == "EN_PARENT");
-    ASSERT_TRUE(sm.m_log[1] == "EN_CHILD2");
-    ASSERT_TRUE(sm.m_log[2] == "ST_CHILD2");
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD2);
+    DMQ_ASSERT_TRUE(sm.m_log[0] == "EN_PARENT");
+    DMQ_ASSERT_TRUE(sm.m_log[1] == "EN_CHILD2");
+    DMQ_ASSERT_TRUE(sm.m_log[2] == "ST_CHILD2");
 }
 
 // PROPAGATE_TO_PARENT resolves through parent's transition entry.
@@ -196,7 +196,7 @@ static void TestHSMPropagateToParent()
     sm.m_log.clear();
 
     sm.GoTop();     // CHILD1 propagates GoTop → PARENT handles → ST_TOP
-    ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_TOP);
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_TOP);
 }
 
 // Guard blocks transition — state stays unchanged, no entry/exit fires.
@@ -208,8 +208,8 @@ static void TestHSMGuardBlocks()
 
     sm.m_guardAllow = false;
     sm.GoChild2();  // guard vetoes CHILD1 → CHILD2
-    ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD1);
-    ASSERT_TRUE(sm.m_log.empty());  // nothing fired
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD1);
+    DMQ_ASSERT_TRUE(sm.m_log.empty());  // nothing fired
 }
 
 // Guard allows transition.
@@ -221,9 +221,9 @@ static void TestHSMGuardAllows()
 
     sm.m_guardAllow = true;
     sm.GoChild2();
-    ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD2);
-    ASSERT_TRUE(sm.m_log[0] == "EX_CHILD1");
-    ASSERT_TRUE(sm.m_log[1] == "EN_CHILD2");
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD2);
+    DMQ_ASSERT_TRUE(sm.m_log[0] == "EX_CHILD1");
+    DMQ_ASSERT_TRUE(sm.m_log[1] == "EN_CHILD2");
 }
 
 // Self-transition does not fire entry/exit.
@@ -234,10 +234,10 @@ static void TestHSMSelfTransition()
     sm.m_log.clear();
 
     sm.GoChild1();  // CHILD1 → CHILD1 self-transition
-    ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD1);
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == TestHSM::ST_CHILD1);
     // No exit or entry — only state action.
-    ASSERT_TRUE(sm.m_log.size() == 1);
-    ASSERT_TRUE(sm.m_log[0] == "ST_CHILD1");
+    DMQ_ASSERT_TRUE(sm.m_log.size() == 1);
+    DMQ_ASSERT_TRUE(sm.m_log[0] == "ST_CHILD1");
 }
 
 // OnEntry signal fires for each state entered (parent then child).
@@ -250,9 +250,9 @@ static void TestHSMOnEntrySignalOrder()
             [&](uint8_t s) { entered.push_back(s); })));
 
     sm.GoChild1();  // TOP → CHILD1: OnEntry fires for PARENT then CHILD1
-    ASSERT_TRUE(entered.size() == 2);
-    ASSERT_TRUE(entered[0] == TestHSM::ST_PARENT);
-    ASSERT_TRUE(entered[1] == TestHSM::ST_CHILD1);
+    DMQ_ASSERT_TRUE(entered.size() == 2);
+    DMQ_ASSERT_TRUE(entered[0] == TestHSM::ST_PARENT);
+    DMQ_ASSERT_TRUE(entered[1] == TestHSM::ST_CHILD1);
 }
 
 // OnExit signal fires for each state exited (child then parent).
@@ -267,9 +267,9 @@ static void TestHSMOnExitSignalOrder()
             [&](uint8_t s) { exited.push_back(s); })));
 
     sm.GoTop();  // CHILD1 → TOP: OnExit fires for CHILD1 then PARENT
-    ASSERT_TRUE(exited.size() == 2);
-    ASSERT_TRUE(exited[0] == TestHSM::ST_CHILD1);
-    ASSERT_TRUE(exited[1] == TestHSM::ST_PARENT);
+    DMQ_ASSERT_TRUE(exited.size() == 2);
+    DMQ_ASSERT_TRUE(exited[0] == TestHSM::ST_CHILD1);
+    DMQ_ASSERT_TRUE(exited[1] == TestHSM::ST_PARENT);
 }
 
 // OnTransition fires once per external event with correct from/to states.
@@ -282,8 +282,8 @@ static void TestHSMOnTransitionSignal()
             [&](uint8_t f, uint8_t t) { capturedFrom = f; capturedTo = t; })));
 
     sm.GoChild1();
-    ASSERT_TRUE(capturedFrom == TestHSM::ST_TOP);
-    ASSERT_TRUE(capturedTo   == TestHSM::ST_CHILD1);
+    DMQ_ASSERT_TRUE(capturedFrom == TestHSM::ST_TOP);
+    DMQ_ASSERT_TRUE(capturedTo   == TestHSM::ST_CHILD1);
 }
 
 // ---------------------------------------------------------------------------
@@ -293,7 +293,7 @@ static void TestHSMOnTransitionSignal()
 static void TestAlarmInitialState()
 {
     AlarmPanel alarm;
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
 }
 
 // ArmHome: DISARMED → ARMED_HOME — parent entry fires before child entry.
@@ -308,10 +308,10 @@ static void TestAlarmArmHome()
             [&](uint8_t s) { entryOrder.push_back(s); })));
 
     alarm.ArmHome();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_HOME);
-    ASSERT_TRUE(entryOrder.size() == 2);
-    ASSERT_TRUE(entryOrder[0] == AL_ARMED);       // parent first
-    ASSERT_TRUE(entryOrder[1] == AL_ARMED_HOME);  // child second
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_HOME);
+    DMQ_ASSERT_TRUE(entryOrder.size() == 2);
+    DMQ_ASSERT_TRUE(entryOrder[0] == AL_ARMED);       // parent first
+    DMQ_ASSERT_TRUE(entryOrder[1] == AL_ARMED_HOME);  // child second
 }
 
 // Toggle ARMED_HOME → ARMED_AWAY: sibling transition — ARMED not re-entered or exited.
@@ -329,9 +329,9 @@ static void TestAlarmToggleDoesNotRepeatParentEntryExit()
             [&](uint8_t s) { if (s == AL_ARMED) armedExitCount++; })));
 
     alarm.Toggle();  // ARMED_HOME → ARMED_AWAY, LCA = ARMED
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_AWAY);
-    ASSERT_TRUE(armedEntryCount == 0);  // ARMED not re-entered
-    ASSERT_TRUE(armedExitCount  == 0);  // ARMED not exited
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_AWAY);
+    DMQ_ASSERT_TRUE(armedEntryCount == 0);  // ARMED not re-entered
+    DMQ_ASSERT_TRUE(armedExitCount  == 0);  // ARMED not exited
 }
 
 // Disarm from ARMED_HOME propagates to ARMED → DISARMED; ARMED exit fires.
@@ -346,8 +346,8 @@ static void TestAlarmDisarmFromArmedHomePropagatesToArmed()
             [&](uint8_t s) { if (s == AL_ARMED) armedExitCount++; })));
 
     alarm.Disarm();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
-    ASSERT_TRUE(armedExitCount == 1);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
+    DMQ_ASSERT_TRUE(armedExitCount == 1);
 }
 
 // Disarm from ARMED_AWAY also propagates correctly.
@@ -356,7 +356,7 @@ static void TestAlarmDisarmFromArmedAway()
     AlarmPanel alarm;
     alarm.ArmAway();
     alarm.Disarm();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
 }
 
 // Trigger from ARMED_HOME propagates to ARMED → ALARMING; ARMED exit fires.
@@ -372,8 +372,8 @@ static void TestAlarmTriggerPropagatesFromChild()
 
     auto t = xmake_shared<TriggerData>(); t->zone = 1;
     alarm.Trigger(t);
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);
-    ASSERT_TRUE(armedExitCount == 1);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);
+    DMQ_ASSERT_TRUE(armedExitCount == 1);
 }
 
 // Trigger from ARMED_AWAY also propagates correctly.
@@ -383,7 +383,7 @@ static void TestAlarmTriggerFromArmedAway()
     alarm.ArmAway();
     auto t = xmake_shared<TriggerData>(); t->zone = 2;
     alarm.Trigger(t);
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);
 }
 
 // Disarm from ALARMING is a direct (non-propagated) transition.
@@ -393,10 +393,10 @@ static void TestAlarmDisarmFromAlarming()
     alarm.ArmHome();
     auto t = xmake_shared<TriggerData>(); t->zone = 1;
     alarm.Trigger(t);
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);
 
     alarm.Disarm();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
 }
 
 // Events that should be ignored in DISARMED do not change state.
@@ -404,11 +404,11 @@ static void TestAlarmEventsIgnoredWhenDisarmed()
 {
     AlarmPanel alarm;
     alarm.Toggle();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
 
     auto t = xmake_shared<TriggerData>(); t->zone = 1;
     alarm.Trigger(t);
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
 }
 
 // Trigger in ALARMING is ignored (alarm is already sounding).
@@ -418,11 +418,11 @@ static void TestAlarmTriggerIgnoredInAlarming()
     alarm.ArmAway();
     auto t1 = xmake_shared<TriggerData>(); t1->zone = 1;
     alarm.Trigger(t1);
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);
 
     auto t2 = xmake_shared<TriggerData>(); t2->zone = 2;
     alarm.Trigger(t2);
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);  // no change
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);  // no change
 }
 
 // Re-arm after disarm produces correct entry sequence again.
@@ -431,7 +431,7 @@ static void TestAlarmRearm()
     AlarmPanel alarm;
     alarm.ArmHome();
     alarm.Disarm();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
 
     int entryArmedCount = 0;
     auto conn = alarm.OnEntry.Connect(
@@ -439,8 +439,8 @@ static void TestAlarmRearm()
             [&](uint8_t s) { if (s == AL_ARMED) entryArmedCount++; })));
 
     alarm.ArmAway();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_AWAY);
-    ASSERT_TRUE(entryArmedCount == 1);  // ARMED entry fired again on re-arm
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_AWAY);
+    DMQ_ASSERT_TRUE(entryArmedCount == 1);  // ARMED entry fired again on re-arm
 }
 
 // Full scenario: arm → trigger → disarm → re-arm → disarm.
@@ -449,23 +449,23 @@ static void TestAlarmFullScenario()
     AlarmPanel alarm;
 
     alarm.ArmHome();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_HOME);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_HOME);
 
     alarm.Toggle();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_AWAY);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_AWAY);
 
     auto t = xmake_shared<TriggerData>(); t->zone = 5;
     alarm.Trigger(t);
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ALARMING);
 
     alarm.Disarm();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
 
     alarm.ArmHome();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_HOME);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_ARMED_HOME);
 
     alarm.Disarm();
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
 }
 
 // ---------------------------------------------------------------------------
@@ -559,7 +559,7 @@ static void TestHSMAsyncBasicDispatch()
 
     done.get_future().get();  // wait until 3rd OnTransition fires on SM thread
 
-    ASSERT_TRUE(sm.GetCurrentState() == StressHSM::ST_CHILD);
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() == StressHSM::ST_CHILD);
 
     smThread.ExitThread();
 }
@@ -588,7 +588,7 @@ static void TestHSMAsyncTransitionCount()
 
     done.get_future().get();
 
-    ASSERT_TRUE(count == 3);
+    DMQ_ASSERT_TRUE(count == 3);
 
     smThread.ExitThread();
 }
@@ -625,8 +625,8 @@ static void TestHSMAsyncEntryExitCounts()
 
     done.get_future().get();
 
-    ASSERT_TRUE(entryParent == 2);  // entered PARENT hierarchy twice
-    ASSERT_TRUE(exitParent  == 1);  // exited PARENT hierarchy once
+    DMQ_ASSERT_TRUE(entryParent == 2);  // entered PARENT hierarchy twice
+    DMQ_ASSERT_TRUE(exitParent  == 1);  // exited PARENT hierarchy once
 
     smThread.ExitThread();
 }
@@ -672,8 +672,8 @@ static void TestHSMAsyncConcurrentEventDispatch()
 
     smThread.ExitThread();
 
-    ASSERT_TRUE(transitionCount > 0);
-    ASSERT_TRUE(sm.GetCurrentState() < sm.GetMaxStates());
+    DMQ_ASSERT_TRUE(transitionCount > 0);
+    DMQ_ASSERT_TRUE(sm.GetCurrentState() < sm.GetMaxStates());
 }
 
 // Async AlarmPanel: arm → trigger → disarm sequence posted asynchronously.
@@ -703,7 +703,7 @@ static void TestHSMAsyncAlarmSequence()
 
     done.get_future().get();
 
-    ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
+    DMQ_ASSERT_TRUE(alarm.GetCurrentState() == AL_DISARMED);
 
     smThread.ExitThread();
 }

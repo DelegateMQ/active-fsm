@@ -7,7 +7,7 @@ StateMachineHSM::StateMachineHSM(uint8_t maxStates, uint8_t initialState)
     : StateMachine(maxStates, initialState)
 {
     // Sentinel values 0xFC and 0xFD must not collide with valid state indices.
-    ASSERT_TRUE(maxStates < PROPAGATE_TO_PARENT);
+    DMQ_ASSERT_TRUE(maxStates < PROPAGATE_TO_PARENT);
 }
 
 //----------------------------------------------------------------------------
@@ -16,14 +16,14 @@ StateMachineHSM::StateMachineHSM(uint8_t maxStates, uint8_t initialState)
 void StateMachineHSM::StateEngine()
 {
     const StateMapRowHSM* map = GetStateMapHSM();
-    ASSERT_TRUE(map != nullptr);
+    DMQ_ASSERT_TRUE(map != nullptr);
 
     std::shared_ptr<const EventData> pDataTemp;
 
     while (IsEventPending())
     {
         uint8_t newState = GetNewState();
-        ASSERT_TRUE(newState < GetMaxStates());
+        DMQ_ASSERT_TRUE(newState < GetMaxStates());
 
         const StateBase* state = map[newState].State;
         const GuardBase* guard = map[newState].Guard;
@@ -49,7 +49,7 @@ void StateMachineHSM::StateEngine()
                 uint8_t exitSteps = 0;
                 while (s < GetMaxStates() && s != lca)
                 {
-                    ASSERT_TRUE(exitSteps++ < MAX_HSM_DEPTH);
+                    DMQ_ASSERT_TRUE(exitSteps++ < MAX_HSM_DEPTH);
                     if (map[s].Exit != nullptr)
                         map[s].Exit->InvokeExitAction(this);
                     OnExit(s);
@@ -63,7 +63,7 @@ void StateMachineHSM::StateEngine()
                 s = newState;
                 while (s < GetMaxStates() && s != lca)
                 {
-                    ASSERT_TRUE(entryCount < MAX_HSM_DEPTH);
+                    DMQ_ASSERT_TRUE(entryCount < MAX_HSM_DEPTH);
                     entryChain[entryCount++] = s;
                     s = map[s].ParentState;
                 }
@@ -79,14 +79,14 @@ void StateMachineHSM::StateEngine()
                 }
 
                 // Entry/exit actions must not fire new events.
-                ASSERT_TRUE(!IsEventPending());
+                DMQ_ASSERT_TRUE(!IsEventPending());
             }
             else
             {
                 SetCurrentState(newState);
             }
 
-            ASSERT_TRUE(state != nullptr);
+            DMQ_ASSERT_TRUE(state != nullptr);
             state->InvokeStateAction(this, pDataTemp);
 
             OnTransition(fromState, GetCurrentState());
@@ -111,13 +111,13 @@ uint8_t StateMachineHSM::FindLCA(uint8_t stateA, uint8_t stateB,
     uint8_t aSteps = 0;
     while (a < maxStates)
     {
-        ASSERT_TRUE(aSteps++ < MAX_HSM_DEPTH);
+        DMQ_ASSERT_TRUE(aSteps++ < MAX_HSM_DEPTH);
 
         uint8_t b = stateB;
         uint8_t bSteps = 0;
         while (b < maxStates)
         {
-            ASSERT_TRUE(bSteps++ < MAX_HSM_DEPTH);
+            DMQ_ASSERT_TRUE(bSteps++ < MAX_HSM_DEPTH);
             if (a == b)
                 return a;
             b = map[b].ParentState;
