@@ -641,7 +641,8 @@ static void TestHSMAsyncConcurrentEventDispatch()
     const int N_THREADS    = 8;
     const int N_ITERATIONS = 200;
 
-    dmq::os::Thread smThread("StressHSMThread_Concurrent");
+    // Queue must hold every event in case producers outpace the SM thread.
+    dmq::os::Thread smThread("StressHSMThread_Concurrent", N_THREADS * N_ITERATIONS * 2);
     smThread.CreateThread();
 
     StressHSM sm;
