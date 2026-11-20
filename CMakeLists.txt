@@ -1,22 +1,38 @@
 # Example CMake command line to create project build files:
 #
-# cmake -B Build .
+# cmake -B build .
+#
+# DelegateMQ is fetched from GitHub at the release tag DMQ_GIT_TAG when CMake
+# configures. To build against a local DelegateMQ checkout instead, add
+# -DFETCHCONTENT_SOURCE_DIR_DELEGATEMQ=<path>. To configure again without
+# network access, add -DFETCHCONTENT_FULLY_DISCONNECTED=ON.
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
-project(StateMachine VERSION 1.0 LANGUAGES CXX)
+project(StateMachine VERSION 1.1.0 LANGUAGES CXX)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# DelegateMQ build options
+# DelegateMQ build options, set before DelegateMQ is added
 set(DMQ_ALLOCATOR "OFF")
 set(DMQ_UTIL "ON")
 set(DMQ_THREAD "DMQ_THREAD_STDLIB")
 set(DMQ_SERIALIZE "DMQ_SERIALIZE_NONE")
 set(DMQ_TRANSPORT "DMQ_TRANSPORT_NONE")
-include("${CMAKE_SOURCE_DIR}/delegate-mq/DelegateMQ.cmake")
+
+# DelegateMQ release to build against
+set(DMQ_GIT_TAG "v2.4.1" CACHE STRING "DelegateMQ release tag (or branch) to fetch")
+
+include(FetchContent)
+FetchContent_Declare(
+    delegatemq
+    GIT_REPOSITORY https://github.com/DelegateMQ/DelegateMQ.git
+    GIT_TAG        ${DMQ_GIT_TAG}
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(delegatemq)
 
 # Collect project source files
 file(GLOB SOURCES      "${CMAKE_SOURCE_DIR}/main.cpp")
@@ -27,24 +43,23 @@ file(GLOB EXAMPLE_SOURCES "${CMAKE_SOURCE_DIR}/examples/*.cpp"
 file(GLOB TEST_SOURCES "${CMAKE_SOURCE_DIR}/unit-tests/*.cpp"
                        "${CMAKE_SOURCE_DIR}/unit-tests/*.h")
 
-list(APPEND SOURCES ${SM_SOURCES} ${EXAMPLE_SOURCES} ${TEST_SOURCES} ${DMQ_PORT_SOURCES})
+list(APPEND SOURCES ${SM_SOURCES} ${EXAMPLE_SOURCES} ${TEST_SOURCES})
 
 # Organize files in IDE (Visual Studio Solution Explorer)
 source_group("State Machine"   FILES ${SM_SOURCES})
 source_group("Examples"        FILES ${EXAMPLE_SOURCES})
 source_group("Unit Tests"      FILES ${TEST_SOURCES})
-source_group("Delegate Files" FILES ${DMQ_LIB_SOURCES})
-source_group("Port Files" FILES ${DMQ_PORT_ONLY_SOURCES})
-source_group("Extras Files" FILES ${DMQ_EXTRAS_SOURCES})
 
-include_directories(
+add_executable(StateMachineApp ${SOURCES})
+
+target_include_directories(StateMachineApp PRIVATE
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/state-machine
     ${CMAKE_SOURCE_DIR}/examples
-    ${DMQ_INCLUDE_DIR}
 )
 
-add_executable(StateMachineApp ${SOURCES} ${DMQ_LIB_SOURCES})
+# DelegateMQ's include directories, compile definitions and library
+target_link_libraries(StateMachineApp PRIVATE DelegateMQ::DelegateMQ)
 
 # -----------------------------------------------------------------------------
 # PRECOMPILED HEADERS (PCH)
@@ -52,6 +67,6 @@ add_executable(StateMachineApp ${SOURCES} ${DMQ_LIB_SOURCES})
 # It compiles DelegateMQ.h once and auto-includes it into every source file
 # in the target, significantly speeding up compilation.
 # -----------------------------------------------------------------------------
-target_precompile_headers(StateMachineApp PRIVATE 
-    "${CMAKE_SOURCE_DIR}/delegate-mq/DelegateMQ.h"
+target_precompile_headers(StateMachineApp PRIVATE
+    "${delegatemq_SOURCE_DIR}/src/delegate-mq/DelegateMQ.h"
 )
