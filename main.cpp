@@ -11,9 +11,9 @@
 #include "examples/AlarmPanel.h"
 #include "unit-tests/StateMachineTests.h"
 #include "unit-tests/StateMachineHSMTests.h"
-#include "delegate-mq/DelegateMQ.h"
-#include "delegate-mq/extras/util/Fault.h"
-#include "delegate-mq/extras/util/Timer.h"
+#include "DelegateMQ.h"
+#include "extras/util/Fault.h"
+#include "extras/util/Timer.h"
 #include <iostream>
 #include <atomic>
 #include <future>

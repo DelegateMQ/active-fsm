@@ -62,6 +62,14 @@ build\Debug\StateMachineApp.exe  # Windows
 
 `StateMachineApp` runs all example state machines and unit tests on launch and outputs results to stdout.
 
+CMake 3.16 or newer is required. [DelegateMQ](https://github.com/DelegateMQ/DelegateMQ) is fetched from GitHub by CMake's `FetchContent` when CMake configures, at the release tag set by `DMQ_GIT_TAG` in `CMakeLists.txt` (currently `v2.4.1`), and the app links the `DelegateMQ::DelegateMQ` target. Options:
+
+* Another release: `cmake -B build . -DDMQ_GIT_TAG=<tag>`
+* A local DelegateMQ checkout instead of GitHub: `-DFETCHCONTENT_SOURCE_DIR_DELEGATEMQ=<path>`
+* No network after the first configure: `-DFETCHCONTENT_FULLY_DISCONNECTED=ON`
+
+To use the state machine in your own project, add the `state-machine/` folder to your build and add DelegateMQ as described in its [build guide](https://github.com/DelegateMQ/DelegateMQ/blob/master/docs/BUILD.md). `StateMachine.h` includes `DelegateMQ.h`, so DelegateMQ's `src/delegate-mq` folder must be on the include path.
+
 ## Related repositories
 
 | Project | Description |
