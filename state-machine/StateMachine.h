@@ -193,8 +193,10 @@ public:
     uint8_t GetMaxStates() const { return MAX_STATES; }
 
     /// Enable active-object mode. ExternalEvent will marshal to @p thread.
-    /// Call before the first ExternalEvent.
-    void SetThread(dmq::IThread& thread) { m_thread = &thread; }
+    /// Call before the first ExternalEvent. Virtual so a derived state machine
+    /// can also connect its timers and signals to the same thread; an override
+    /// must call StateMachine::SetThread().
+    virtual void SetThread(dmq::IThread& thread) { m_thread = &thread; }
 
     /// Fired after every completed state action: (fromState, toState).
     /// fromState == toState indicates a self-transition.
